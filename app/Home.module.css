@@ -1,0 +1,75 @@
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
+
+.h1_01 {
+    text-align: center;
+    position: relative;
+    top: -10px;
+}
+
+.SearchBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.input {
+    width: 80%;
+    padding: 8px;
+    font-size: 16px;
+}
+
+.button {
+    padding: 8px 16px;
+    margin-left: 8px;
+}
+
+.Search_results {
+    position: relative;
+    top: 20px;
+    text-align: center;
+}
+.Not_recipes {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+}
+
+.recipeList {
+    list-style: none;
+    position: relative;
+    top: 50px;
+    padding: 0;
+}
+
+.recipeItem {
+    cursor: pointer;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.recipeThumb {
+    border-radius: 8px;
+    margin-right: 12px;
+    width: 80px;
+    height: 80px;
+}
+
+.recipeDetailImg {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.backButton {
+    margin-bottom: 16px;
+}
