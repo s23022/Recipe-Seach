@@ -12,8 +12,10 @@ import {
   query,
   where,
 } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+    const router = useRouter();
 
     const [ingredient, setIngredient] = useState('');
     const [recipes, setRecipes] = useState([]);
@@ -23,11 +25,20 @@ export default function Home() {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [favorites, setFavorites] = useState([]);
 
-    useEffect(() => {
-        if (auth.currentUser) {
-            loadFavoritesFromFirestore();
-        }
-    }, []);
+     useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                // ユーザーがログインしていれば、お気に入りを読み込む
+                loadFavoritesFromFirestore();
+            } else {
+                // ログアウトしていれば、お気に入りリストを空にする
+                setFavorites([]);
+            }
+        });
+
+        // クリーンアップ
+        return () => unsubscribe();
+    }, []); 
 
     async function loadFavoritesFromFirestore() {
         const user = auth.currentUser;
@@ -178,6 +189,13 @@ export default function Home() {
 
     return (
         <div className={styles.container}>
+            <button
+                onClick={() => router.push('/favorites')}
+                className={styles.favToggleButton}
+            >
+                ❤️ お気に入りページへ
+            </button>
+            
             <h1 className={styles.h1_01}>食材から探せるレシピ検索</h1>
 
             <div className={styles.SearchBar}>
@@ -242,37 +260,8 @@ export default function Home() {
                             );
                         })}
                     </ul>
-
-        {favorites.length > 0 && (
-            <>
-              <h2 className={styles.favHeading}>❤️ お気に入りレシピ</h2>
-              <ul className={styles.recipeList}>
-                {favorites.map((r) => (
-                  <li
-                    key={r.idMeal}
-                    className={styles.recipeItem}
-                    onClick={() => fetchRecipeDetail(r.idMeal)}
-                  >
-                    <img src={r.strMealThumb} alt={r.strMeal} className={styles.recipeThumb} />
-                    <div className={styles.recipeTitleRow}>
-                      <span>{r.strMeal}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(r);
-                        }}
-                        className={styles.favoriteButton}
-                      >
-                        {'★'}
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </>
-    )}
+                </>
+            )}
 
             {selectedRecipe && (
                 <div>

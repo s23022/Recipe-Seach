@@ -1,0 +1,99 @@
+/* --- 全体のコンテナ --- */
+.container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+/* --- 「トップに戻る」ボタン --- */
+.backButton {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #e0e0e0;
+}
+
+/* --- タイトル --- */
+.title {
+  color: #333;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* --- ローディングや空のメッセージ --- */
+.message {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+/* --- レシピリスト全体 --- */
+.recipeList {
+  list-style: none;
+  padding: 0;
+}
+
+/* --- レシピの各項目 --- */
+.recipeItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+/* --- レシピ画像と名前のコンテナ --- */
+.recipeLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  flex-grow: 1; /* ← これが重要 */
+  transition: background-color 0.2s;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.recipeLink:hover {
+  background-color: #f9f9f9;
+}
+
+
+/* --- レシピ画像 --- */
+.recipeImage {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1rem;
+}
+
+/* --- レシピ名 --- */
+.recipeName {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* --- 削除ボタン --- */
+.deleteButton {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 1rem; /* ← これが重要 */
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #cc0000;
+}
