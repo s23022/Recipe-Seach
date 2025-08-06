@@ -10,19 +10,19 @@ import styles from './sign_up.module.css';
 export default function SignUpPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const router = useRouter();
 
     const handleSignUp = async (e) => {
         e.preventDefault();
+        if (password !== confirmPassword) {
+            alert('パスワードが一致しません');
+            return;
+        }
+
         try {
-            // ユーザー登録
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-            // Firestore に保存
-            await setDoc(doc(db, 'users', email), {
-                email: email,
-            });
-
+            await setDoc(doc(db, 'users', email), { email });
             alert('登録成功！ログイン画面に移動します。');
             router.push('/');
         } catch (err) {
@@ -59,6 +59,14 @@ export default function SignUpPage() {
                     placeholder="パスワード"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className={styles.input}
+                />
+                <input
+                    type="password"
+                    placeholder="パスワード確認"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     className={styles.input}
                 />
