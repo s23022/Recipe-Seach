@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import styles from './Home.module.css';
+import { auth, db } from '../lib/firebase';
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
 
 export default function Home() {
 
@@ -11,7 +21,61 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [favorites, setFavorites] = useState([]);
 
+    useEffect(() => {
+        if (auth.currentUser) {
+            loadFavoritesFromFirestore();
+        }
+    }, []);
+
+    async function loadFavoritesFromFirestore() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const q = query(collection(db, 'favorites'), where('userId', '==', user.uid));
+        const snapshot = await getDocs(q);
+        const favs = snapshot.docs.map(doc => doc.data().recipe);
+        setFavorites(favs);
+    }
+
+    async function addFavoriteToFirestore(recipe) {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await addDoc(collection(db, 'favorites'), {
+            userId: user.uid,
+            recipeId: recipe.idMeal,
+            recipe,
+            });
+        }
+
+    async function removeFavoriteFromFirestore(recipeId) {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const q = query(
+            collection(db, 'favorites'),
+            where('userId', '==', user.uid),
+            where('recipeId', '==', recipeId)
+        );
+
+    const snapshot = await getDocs(q);
+    snapshot.forEach(docSnap => {
+      deleteDoc(doc(db, 'favorites', docSnap.id));
+    });
+  }
+
+  async function toggleFavorite(recipe) {
+    const exists = favorites.some(fav => fav.idMeal === recipe.idMeal);
+    if (exists) {
+      await removeFavoriteFromFirestore(recipe.idMeal);
+      setFavorites(favorites.filter(f => f.idMeal !== recipe.idMeal));
+    } else {
+      await addFavoriteToFirestore(recipe);
+      setFavorites([...favorites, recipe]);
+    }
+  }
 
     async function fetchRandomRecipes(count = 6) {
         const promises = Array.from({ length: count }, async () => {
@@ -149,23 +213,66 @@ export default function Home() {
                     </p>
 
                     <ul className={styles.recipeList}>
-                        {recipes.map((r) => (
-                            <li
-                                key={r.idMeal}
-                                className={styles.recipeItem}
-                                onClick={() => fetchRecipeDetail(r.idMeal)}
-                            >
-                                <img
-                                    src={r.strMealThumb}
-                                    alt={r.strMeal}
-                                    className={styles.recipeThumb}
-                                />
-                                <span>{r.strMeal}</span>
+                        {recipes.map((r) => {
+                            const isFavorite = favorites.some(f => f.idMeal === r.idMeal);
+                            return (
+                                <li
+                                    key={r.idMeal}
+                                    className={styles.recipeItem}
+                                    onClick={() => fetchRecipeDetail(r.idMeal)}
+                                >
+                                    <img
+                                        src={r.strMealThumb}
+                                        alt={r.strMeal}
+                                        className={styles.recipeThumb}
+                                    />
+                                    <div className={styles.recipeTitleRow}>
+                                        <span>{r.strMeal}</span>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleFavorite(r);
+                                            }}
+                                            className={styles.favoriteButton}
+                                        >
+                                        {isFavorite ? '★' : '☆'}
+                                    </button>
+                                </div>
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
-                </>
-            )}
+
+        {favorites.length > 0 && (
+            <>
+              <h2 className={styles.favHeading}>❤️ お気に入りレシピ</h2>
+              <ul className={styles.recipeList}>
+                {favorites.map((r) => (
+                  <li
+                    key={r.idMeal}
+                    className={styles.recipeItem}
+                    onClick={() => fetchRecipeDetail(r.idMeal)}
+                  >
+                    <img src={r.strMealThumb} alt={r.strMeal} className={styles.recipeThumb} />
+                    <div className={styles.recipeTitleRow}>
+                      <span>{r.strMeal}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(r);
+                        }}
+                        className={styles.favoriteButton}
+                      >
+                        {'★'}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+    )}
 
             {selectedRecipe && (
                 <div>
