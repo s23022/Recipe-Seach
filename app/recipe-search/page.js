@@ -270,6 +270,12 @@ export default function Home() {
                     </button>
 
                     <h2>{selectedRecipe.strMeal}</h2>
+                    <button 
+                        onClick={() => toggleFavorite(selectedRecipe)}
+                        className={styles.favoriteButton}
+                        >
+                        {favorites.some(f => f.idMeal === selectedRecipe.idMeal) ? '★' : '☆'}
+                    </button>
                     <img
                         src={selectedRecipe.strMealThumb}
                         alt={selectedRecipe.strMeal}
