@@ -340,8 +340,8 @@ export default function Home() {
                             {selectedRecipe.strInstructions}
                         </p>
                     </div>
-                </div>
-            )}
-        </div>
-    );
+                  </div>
+              )}
+          </div>
+      );
 }
