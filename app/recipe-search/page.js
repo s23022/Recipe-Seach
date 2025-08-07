@@ -1,23 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { signOut } from "firebase/auth";
+import {useState, useEffect} from 'react';
+import {signOut} from "firebase/auth";
 import styles from './Home.module.css';
-import { auth, db } from '../lib/firebase';
+import {auth, db} from '../lib/firebase';
 import {
-  collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  where,
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    getDocs,
+    query,
+    where,
 } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import {useRouter} from 'next/navigation';
 
 export default function Home() {
     const router = useRouter();
-
     const [ingredient, setIngredient] = useState('');
     const [recipes, setRecipes] = useState([]);
     const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -29,17 +28,17 @@ export default function Home() {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     useEffect(() => {
-      const unsubscribe = auth.onAuthStateChanged(user => {
-        if (user) {
-          setUser(user);
-          loadFavoritesFromFirestore();
-        } else {
-          setUser(null);
-          setFavorites([]);
-          router.push('/');
-        }
-      });
-      return () => unsubscribe();
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                setUser(user);
+                loadFavoritesFromFirestore();
+            } else {
+                setUser(null);
+                setFavorites([]);
+                router.push('/');
+            }
+        });
+        return () => unsubscribe();
     }, [router]);
 
     async function loadFavoritesFromFirestore() {
@@ -74,9 +73,9 @@ export default function Home() {
         );
         const snapshot = await getDocs(q);
         snapshot.forEach(docSnap => {
-          deleteDoc(doc(db, 'favorites', docSnap.id));
+            deleteDoc(doc(db, 'favorites', docSnap.id));
         });
-      }
+    }
 
     const handleLogout = async () => {
         try {
@@ -100,7 +99,7 @@ export default function Home() {
     }
 
     async function fetchRandomRecipes(count = 8) {
-        const promises = Array.from({ length: count }, async () => {
+        const promises = Array.from({length: count}, async () => {
             const res = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
             const data = await res.json();
             return data.meals?.[0];
@@ -212,136 +211,137 @@ export default function Home() {
 
             <div className={styles.searchBar}>
 
-            {user && (
-                <div>
-                    <div className={styles.userIcon} onClick={() => setIsMenuVisible(!isMenuVisible)}>
-                        {user.email.charAt(0).toUpperCase()}
-                    </div>
+                {user && (
+                    <div>
+                        <div className={styles.userIcon} onClick={() => setIsMenuVisible(!isMenuVisible)}>
+                            {user.email.charAt(0).toUpperCase()}
+                        </div>
 
-                    {isMenuVisible && (
-                        <div className={styles.userMenu}>
-                            <div className={styles.userInfo}>
-                                <div className={styles.menuIcon}>{user.email.charAt(0).toUpperCase()}</div>
-                                <span className={styles.menuEmail}>{user.email}</span>
+                        {isMenuVisible && (
+                            <div className={styles.userMenu}>
+                                <div className={styles.userInfo}>
+                                    <div className={styles.menuIcon}>{user.email.charAt(0).toUpperCase()}</div>
+                                    <span className={styles.menuEmail}>{user.email}</span>
+                                </div>
+                                <button onClick={handleLogout} className={styles.logoutButton}>
+                                    ログアウト
+                                </button>
                             </div>
-                            <button onClick={handleLogout} className={styles.logoutButton}>
-                                ログアウト
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <h1 className={styles.h1_01}>食材から探せるレシピ検索</h1>
-
-            <div className={styles.SearchBar}>
-
-                <input
-                    type="text"
-                    placeholder="例: chicken, garlic, onion"
-                    value={ingredient}
-                    onChange={(e) => setIngredient(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && searchRecipes()}
-                    className={styles.input}
-                />
-                <button onClick={searchRecipes} className={styles.button}>検索</button>
-            </div>
-
-            {loading && <div className={styles.loader}></div>}
-            
-            {!loading && !selectedRecipe && (
-                <>
-                    <h2 className={styles.sectionTitle}>
-                        {hasSearched
-                            ? `「${searchKeyword}」の検索結果`
-                            : '✨ おすすめレシピ'}
-                    </h2>
-                    
-                    {recipes.length > 0 ? (
-                        <div className={styles.recipeGrid}>
-                            {recipes.map((r) => {
-                                const isFavorite = favorites.some(f => f.idMeal === r.idMeal);
-                                return (
-                                    <div
-                                        key={r.idMeal}
-                                        className={styles.recipeCard}
-                                        onClick={() => fetchRecipeDetail(r.idMeal)}
-                                    >
-                                        <img
-                                            src={r.strMealThumb}
-                                            alt={r.strMeal}
-                                            className={styles.recipeThumb}
-                                        />
-                                        <div className={styles.recipeCardContent}>
-                                            <span className={styles.recipeTitle}>{r.strMeal}</span>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleFavorite(r);
-                                                }}
-                                                className={`${styles.favoriteButton} ${isFavorite ? styles.isFavorite : ''}`}
-                                            >
-                                                {isFavorite ? '★' : '☆'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        hasSearched && <p className={styles.noResults}>レシピが見つかりませんでした。</p>
-                    )}
-                </>
-            )}
-
-            {!loading && selectedRecipe && (
-                <div className={styles.recipeDetail}>
-                    <button onClick={() => setSelectedRecipe(null)} className={styles.backButton}>
-                        ← 検索結果に戻る
-                    </button>
-
-                    <h2 className={styles.detailTitle}>{selectedRecipe.strMeal}</h2>
-                    
-                    <div className={styles.detailHeader}>
-                        <span className={styles.tag}>{selectedRecipe.strCategory}</span>
-                        <span className={styles.tag}>{selectedRecipe.strArea}</span>
+                        )}
                     </div>
+                )}
 
-                    <img
-                        src={selectedRecipe.strMealThumb}
-                        alt={selectedRecipe.strMeal}
-                        className={styles.recipeDetailImg}
+                <h1 className={styles.h1_01}>食材から探せるレシピ検索</h1>
+
+                <div className={styles.SearchBar}>
+
+                    <input
+                        type="text"
+                        placeholder="例: chicken, garlic, onion"
+                        value={ingredient}
+                        onChange={(e) => setIngredient(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && searchRecipes()}
+                        className={styles.input}
                     />
-                    
-                    <button
-                        onClick={() => toggleFavorite(selectedRecipe)}
-                        className={`${styles.mainFavoriteButton} ${favorites.some(f => f.idMeal === selectedRecipe.idMeal) ? styles.isFavorite : ''}`}
-                    >
-                        {favorites.some(f => f.idMeal === selectedRecipe.idMeal) ? '★ お気に入りから削除' : '☆ お気に入りに追加'}
-                    </button>
-                    
-                    <div className={styles.detailSection}>
-                        <h3>材料と分量</h3>
-                        <ul className={styles.ingredientList}>
-                            {[...Array(20)].map((_, i) => {
-                                const ing = selectedRecipe[`strIngredient${i + 1}`];
-                                const measure = selectedRecipe[`strMeasure${i + 1}`];
-                                if (ing && ing.trim()) {
-                                    return <li key={i}><span>{ing}</span><span>{measure}</span></li>;
-                                }
-                                return null;
-                            })}
-                        </ul>
+                    <button onClick={searchRecipes} className={styles.button}>検索</button>
+                </div>
+
+                {loading && <div className={styles.loader}></div>}
+
+                {!loading && !selectedRecipe && (
+                    <>
+                        <h2 className={styles.sectionTitle}>
+                            {hasSearched
+                                ? `「${searchKeyword}」の検索結果`
+                                : '✨ おすすめレシピ'}
+                        </h2>
+
+                        {recipes.length > 0 ? (
+                            <div className={styles.recipeGrid}>
+                                {recipes.map((r) => {
+                                    const isFavorite = favorites.some(f => f.idMeal === r.idMeal);
+                                    return (
+                                        <div
+                                            key={r.idMeal}
+                                            className={styles.recipeCard}
+                                            onClick={() => fetchRecipeDetail(r.idMeal)}
+                                        >
+                                            <img
+                                                src={r.strMealThumb}
+                                                alt={r.strMeal}
+                                                className={styles.recipeThumb}
+                                            />
+                                            <div className={styles.recipeCardContent}>
+                                                <span className={styles.recipeTitle}>{r.strMeal}</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFavorite(r);
+                                                    }}
+                                                    className={`${styles.favoriteButton} ${isFavorite ? styles.isFavorite : ''}`}
+                                                >
+                                                    {isFavorite ? '★' : '☆'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            hasSearched && <p className={styles.noResults}>レシピが見つかりませんでした。</p>
+                        )}
+                    </>
+                )}
+
+                {!loading && selectedRecipe && (
+                    <div className={styles.recipeDetail}>
+                        <button onClick={() => setSelectedRecipe(null)} className={styles.backButton}>
+                            ← 検索結果に戻る
+                        </button>
+
+                        <h2 className={styles.detailTitle}>{selectedRecipe.strMeal}</h2>
+
+                        <div className={styles.detailHeader}>
+                            <span className={styles.tag}>{selectedRecipe.strCategory}</span>
+                            <span className={styles.tag}>{selectedRecipe.strArea}</span>
+                        </div>
+
+                        <img
+                            src={selectedRecipe.strMealThumb}
+                            alt={selectedRecipe.strMeal}
+                            className={styles.recipeDetailImg}
+                        />
+
+                        <button
+                            onClick={() => toggleFavorite(selectedRecipe)}
+                            className={`${styles.mainFavoriteButton} ${favorites.some(f => f.idMeal === selectedRecipe.idMeal) ? styles.isFavorite : ''}`}
+                        >
+                            {favorites.some(f => f.idMeal === selectedRecipe.idMeal) ? '★ お気に入りから削除' : '☆ お気に入りに追加'}
+                        </button>
+
+                        <div className={styles.detailSection}>
+                            <h3>材料と分量</h3>
+                            <ul className={styles.ingredientList}>
+                                {[...Array(20)].map((_, i) => {
+                                    const ing = selectedRecipe[`strIngredient${i + 1}`];
+                                    const measure = selectedRecipe[`strMeasure${i + 1}`];
+                                    if (ing && ing.trim()) {
+                                        return <li key={i}><span>{ing}</span><span>{measure}</span></li>;
+                                    }
+                                    return null;
+                                })}
+                            </ul>
+                        </div>
+
+                        <div className={styles.detailSection}>
+                            <h3>作り方</h3>
+                            <p className={styles.instructions}>
+                                {selectedRecipe.strInstructions}
+                            </p>
+                        </div>
                     </div>
-                    
-                    <div className={styles.detailSection}>
-                        <h3>作り方</h3>
-                        <p className={styles.instructions}>
-                            {selectedRecipe.strInstructions}
-                        </p>
-                    </div>
-                  </div>
-              )}
-          </div>
-      );
+                )}
+            </div>
+        </div>
+    )
 }
