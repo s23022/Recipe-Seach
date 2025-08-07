@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '../lib/firebase';
 import { signOut } from "firebase/auth";
 import styles from './Home.module.css';
 import { auth, db } from '../lib/firebase';
@@ -27,17 +25,22 @@ export default function Home() {
     const [hasSearched, setHasSearched] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [favorites, setFavorites] = useState([]);
+    const [user, setUser] = useState(null);
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            if (user) {
-                loadFavoritesFromFirestore();
-            } else {
-                setFavorites([]);
-            }
-        });
-        return () => unsubscribe();
-    }, []);
+      const unsubscribe = auth.onAuthStateChanged(user => {
+        if (user) {
+          setUser(user);
+          loadFavoritesFromFirestore();
+        } else {
+          setUser(null);
+          setFavorites([]);
+          router.push('/');
+        }
+      });
+      return () => unsubscribe();
+    }, [router]);
 
     async function loadFavoritesFromFirestore() {
         const user = auth.currentUser;
@@ -69,21 +72,11 @@ export default function Home() {
             where('userId', '==', user.uid),
             where('recipeId', '==', recipeId)
         );
-      
-    const [user, setUser] = useState(null);
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
-                router.push('/');
-            }
+        const snapshot = await getDocs(q);
+        snapshot.forEach(docSnap => {
+          deleteDoc(doc(db, 'favorites', docSnap.id));
         });
-        return () => unsubscribe();
-    }, [router]);
+      }
 
     const handleLogout = async () => {
         try {
@@ -94,13 +87,6 @@ export default function Home() {
             alert('ログアウトに失敗しました。');
         }
     };
-
-
-        const snapshot = await getDocs(q);
-        snapshot.forEach(docSnap => {
-            deleteDoc(doc(db, 'favorites', docSnap.id));
-        });
-    }
 
     async function toggleFavorite(recipe) {
         const exists = favorites.some(fav => fav.idMeal === recipe.idMeal);
