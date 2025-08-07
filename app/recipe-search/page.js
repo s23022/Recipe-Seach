@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { auth } from '../lib/firebase';
+import { signOut } from "firebase/auth";
 import styles from './Home.module.css';
 import { auth, db } from '../lib/firebase';
 import {
@@ -66,6 +69,33 @@ export default function Home() {
             where('userId', '==', user.uid),
             where('recipeId', '==', recipeId)
         );
+      
+    const [user, setUser] = useState(null);
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+                router.push('/');
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            router.push('/');
+        } catch (error) {
+            console.error('ログアウトエラー', error);
+            alert('ログアウトに失敗しました。');
+        }
+    };
+
 
         const snapshot = await getDocs(q);
         snapshot.forEach(docSnap => {
@@ -184,6 +214,7 @@ export default function Home() {
 
     return (
         <div className={styles.container}>
+
             <header className={styles.header}>
                 <h1 className={styles.title}>Recipe Finder</h1>
                 <button
@@ -195,6 +226,31 @@ export default function Home() {
             </header>
 
             <div className={styles.searchBar}>
+
+            {user && (
+                <div>
+                    <div className={styles.userIcon} onClick={() => setIsMenuVisible(!isMenuVisible)}>
+                        {user.email.charAt(0).toUpperCase()}
+                    </div>
+
+                    {isMenuVisible && (
+                        <div className={styles.userMenu}>
+                            <div className={styles.userInfo}>
+                                <div className={styles.menuIcon}>{user.email.charAt(0).toUpperCase()}</div>
+                                <span className={styles.menuEmail}>{user.email}</span>
+                            </div>
+                            <button onClick={handleLogout} className={styles.logoutButton}>
+                                ログアウト
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <h1 className={styles.h1_01}>食材から探せるレシピ検索</h1>
+
+            <div className={styles.SearchBar}>
+
                 <input
                     type="text"
                     placeholder="例: chicken, garlic, onion"
