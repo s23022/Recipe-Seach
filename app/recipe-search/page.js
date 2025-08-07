@@ -72,7 +72,6 @@ export default function Home() {
       
     const [user, setUser] = useState(null);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
