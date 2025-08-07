@@ -1,68 +1,150 @@
-'use client';
-
+"use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './lib/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from './lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import styles from './rogin.module.css';
 
-export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [pw, setPw] = useState('');
-    const [error, setError] = useState('');
-    const router = useRouter();
+export default function LoginSignupPage() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const router = useRouter();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            await signInWithEmailAndPassword(auth, email, pw);
-            router.push('/recipe-search'); // ここで遷移！
-        } catch (err) {
-            if (err.code === 'auth/user-not-found') {
-                alert('このアカウントは登録されていません。新規登録を行ってください');
-            } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-login-credentials') {
-                alert('メールアドレス、もしくはパスワードが間違っています');
-            } else {
-                alert('ログインに失敗しました: ' + err.message);
-            }
-            setError(err.message);
-        }
-    };
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
-    const goToSignUp = () => {
-        router.push('/sign_up');
-    };
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      alert('ログインに成功しました！');
+      router.push('/dashboard'); // ログイン後のページに遷移
+    } catch (err) {
+      if (err.code === 'auth/user-not-found') {
+        alert('ユーザーが見つかりません。メールアドレスを確認してください。');
+      } else if (err.code === 'auth/wrong-password') {
+        alert('パスワードが間違っています。');
+      } else if (err.code === 'auth/invalid-email') {
+        alert('無効なメールアドレスです。');
+      } else {
+        alert('ログインに失敗しました: ' + err.message);
+      }
+    }
+  };
 
-    return (
-        <div className={styles.container}>
-            <h1 className={styles.title}>ログイン画面</h1>
-            <form onSubmit={handleLogin} className={styles.form}>
-                <input
-                    type="email"
-                    placeholder="メールアドレス"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className={styles.input}
-                />
-                <input
-                    type="password"
-                    placeholder="パスワード"
-                    value={pw}
-                    onChange={(e) => setPw(e.target.value)}
-                    required
-                    className={styles.input}
-                />
-                <button type="submit" className={styles.button}>ログイン</button>
-            </form>
+  const handleSignUp = async () => {
+    // この関数は使用しないが、後で必要になった時のために残しておく
+    if (formData.password !== formData.confirmPassword) {
+      alert('パスワードが一致しません');
+      return;
+    }
 
-            <p className={styles.linkText}>
-                アカウントをお持ちでない方は
-                <button onClick={goToSignUp} className={styles.linkButton}>新規登録へ</button>
-            </p>
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      await setDoc(doc(db, 'users', formData.email), {
+        email: formData.email,
+      });
+      alert('登録成功！ダッシュボードに移動します。');
+      router.push('/dashboard');
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        alert('このメールアドレスは既に使われています。ログインしてください。');
+      } else if (err.code === 'auth/invalid-email') {
+        alert('無効なメールアドレスです。正しいメールアドレスを入力してください。');
+      } else if (err.code === 'auth/weak-password') {
+        alert('パスワードは6文字以上にしてください。');
+      } else {
+        alert('登録に失敗しました: ' + err.message);
+      }
+    }
+  };
 
-            {error && <p className={styles.error}>{error}</p>}
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (isLogin) {
+      await handleLogin();
+    } else {
+      // サインアップページに遷移
+      router.push('/signup');
+    }
+  };
+
+  return (
+    <div className={styles.pageContainer}>
+      <div className={styles.loginContainer}>
+        <h1 className={styles.title}>
+          {isLogin ? 'ログイン' : 'アカウント作成'}
+        </h1>
+        
+        <form onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <input
+              type="email"
+              name="email"
+              placeholder="E-mail"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          
+          {!isLogin && (
+            <div className={styles.formGroup}>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          )}
+          
+          <button type="submit">
+            {isLogin ? 'LOGIN' : 'SIGNUP'}
+          </button>
+        </form>
+        
+        <div className={styles.switchSection}>
+          <p className={styles.switchText}>
+            {isLogin ? 'アカウントをお持ちでない方は' : 'すでにアカウントをお持ちの方は'}
+          </p>
+          <button
+            onClick={() => {
+              if (!isLogin) {
+                router.push('/signup');
+              } else {
+                setIsLogin(!isLogin);
+              }
+            }}
+            className={styles.switchButton}
+            type="button"
+          >
+            {isLogin ? 'アカウント作成' : 'ログインに戻る'}
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
