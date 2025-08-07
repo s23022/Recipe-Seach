@@ -35,6 +35,10 @@
   margin-bottom: 0.5rem;
   color: #555;
   font-weight: 500;
+=======
+    display: flex;
+    flex-direction: column;
+    width: 500px;
 }
 
 .input {
