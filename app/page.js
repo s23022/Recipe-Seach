@@ -35,7 +35,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="pageContainer">
+    <div className={styles.pageContainer}>
+      <h1 className={styles.h1_text}>レシピ検索アプリ</h1>
       <div className={styles.container}>
         <h1 className={styles.heading}>ログイン</h1>
         <form onSubmit={handleLogin} className={styles.form}>
