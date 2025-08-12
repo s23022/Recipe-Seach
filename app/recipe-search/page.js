@@ -203,7 +203,7 @@ export default function Home() {
             )}
 
             <header className={styles.header}>
-                <h1 className={styles.title}>Recipe Finder</h1>
+                <h1 className={styles.title}>レシピ検索</h1>
                 <button onClick={() => router.push('/favorites')} className={styles.favLink}>❤️ お気に入り</button>
             </header>
 
