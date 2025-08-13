@@ -1,4 +1,5 @@
-/* === 全体レイアウト === */
+/* === 全体レイアウト ===
+   ページ全体の幅・中央寄せ・背景色・フォント */
 .container {
     max-width: 960px;
     margin: 0 auto;
@@ -7,7 +8,8 @@
     background-color: #f9f9f9;
 }
 
-/* === ヘッダー === */
+/* === ヘッダー ===
+   タイトルとお気に入りリンクのレイアウト */
 .header {
     display: flex;
     justify-content: space-between;
@@ -44,47 +46,8 @@
     color: #fff;
 }
 
-/* === 検索バー === */
-.searchBar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 40px;
-}
-
-.input {
-    flex-grow: 1;
-    padding: 15px 20px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 50px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.input:focus {
-    outline: none;
-    border-color: #d35400;
-    box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
-}
-
-.button {
-    padding: 15px 30px;
-    background-color: #e67e22;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.button:hover {
-    background-color: #d35400;
-    transform: translateY(-2px);
-}
-
-/* === セクションタイトル === */
+/* === セクションタイトル ===
+   セクションごとのタイトル中央揃え */
 .sectionTitle {
     font-size: 1.8rem;
     color: #444;
@@ -92,7 +55,91 @@
     text-align: center;
 }
 
-/* === レシピ一覧 (グリッド) === */
+/* === ローダー・メッセージ ===
+   読み込みアニメーションやメッセージの表示 */
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #e67e22;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 50px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.noResults {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #777;
+    margin-top: 50px;
+}
+
+/* === レスポンシブ対応 ===
+   画面幅に応じたレイアウトの調整 */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .recipeGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .recipeDetail {
+        padding: 20px;
+    }
+
+    .detailTitle {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+
+    .searchBar {
+        flex-direction: column;
+    }
+
+    .button {
+        width: 100%;
+    }
+
+    .recipeGrid {
+        grid-template-columns: 1fr; /* 1列にする */
+        gap: 15px;
+    }
+
+    .recipeCardContent {
+        padding: 12px;
+    }
+
+    .recipeTitle {
+        font-size: 0.9rem;
+    }
+}
+
+/* =========================================================
+   1. 【コンポーネント別CSS】
+   各Reactコンポーネントに対応したスタイル群
+   ========================================================= */
+
+/* === RecipeListのCSS ===
+   レシピ一覧画面のグリッド・カード・お気に入りボタンのスタイル */
 .recipeGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -134,7 +181,7 @@
     line-height: 1.4;
 }
 
-/* === お気に入りボタン (一覧) === */
+/* お気に入りボタン（一覧画面用） */
 .favoriteButton {
     background: transparent;
     border: none;
@@ -154,32 +201,10 @@
     transform: scale(1.2);
 }
 
+/* ーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
-/* === ローダー・メッセージ === */
-.loader {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #e67e22;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 50px auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.noResults {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #777;
-    margin-top: 50px;
-}
-
-
-/* === レシピ詳細ページ === */
+/ * === RecipeDetailのCSS ===
+レシピ詳細画面のレイアウト、画像、テキスト、ボタンのスタイル */
 .recipeDetail {
     background-color: #fff;
     padding: 30px 40px;
@@ -233,7 +258,7 @@
     margin-bottom: 25px;
 }
 
-/* === お気に入りボタン (詳細) === */
+/* お気に入りボタン（詳細画面用） */
 .mainFavoriteButton {
     display: flex;
     align-items: center;
@@ -285,23 +310,7 @@
     padding: 12px 0;
     border-bottom: 1px solid #f0f0f0;
 }
-.ingredientList li span:first-child {
-    font-weight: 500;
-}
 
-.instructions {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    white-space: pre-wrap;
-    color: #555;
-}
-
-.ingredientList li {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
 .ingredientList li:last-child {
     border-bottom: none;
 }
@@ -316,11 +325,11 @@
     font-weight: 500;
 }
 
-
+/* 作り方説明 */
 .instructions {
     font-size: 1.1rem;
     line-height: 1.8;
-    white-space: pre-wrap; /* 改行を反映させる */
+    white-space: pre-wrap; /* 改行を反映 */
     color: #555;
     background-color: #fafafa;
     padding: 20px;
@@ -328,61 +337,53 @@
     border: 1px solid #eee;
 }
 
-/* === レスポンシブ対応 === */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
+/* ーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
-    .title {
-        font-size: 2rem;
-    }
-
-    .recipeGrid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
-    }
-
-    .recipeDetail {
-        padding: 20px;
-    }
-
-    .detailTitle {
-        font-size: 1.8rem;
-    }
+/ * === SearchBarのCSS ===
+検索バーの入力欄・ボタンのスタイル */
+.searchBar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 40px;
 }
 
-
-@media (max-width: 480px) {
-    .container {
-        padding: 15px;
-    }
-
-    .searchBar {
-        flex-direction: column;
-    }
-    
-    .button {
-        width: 100%;
-    }
-
-    .recipeGrid {
-        grid-template-columns: 1fr; /* 1列にする */
-        gap: 15px;
-    }
-
-    .recipeCardContent {
-        padding: 12px;
-    }
-
-    .recipeTitle {
-        font-size: 0.9rem;
-    }
+.input {
+    flex-grow: 1;
+    padding: 15px 20px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 50px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.input:focus {
+    outline: none;
+    border-color: #d35400;
+    box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+}
 
+.button {
+    padding: 15px 30px;
+    background-color: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+    background-color: #d35400;
+    transform: translateY(-2px);
+}
+
+/* ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+/ * === UserMenuのCSS ===
+ユーザーアイコン、メニュー表示、ログアウトボタンのスタイル */
 .userIcon {
     position: absolute;
     top: 20px;
